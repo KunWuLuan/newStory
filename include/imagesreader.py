@@ -2,7 +2,7 @@ import os
 from PIL import Image
 
 class ImagesReader:
-    def __init__(self, path, suffix, transform):
+    def __init__(self, path, transform, suffix):
         self.path = path
         self.transform = transform
         self.dataset = []
@@ -14,8 +14,8 @@ class ImagesReader:
 
     def next(self):
         if self.cursor == len(self.dataset):
-            return None
+            return -1, None
         else:
             ret = self.dataset[self.cursor]
-            self.cursor = self.cursor-1
-            return ret
+            self.cursor = self.cursor+1
+            return 1, ret

@@ -1,6 +1,9 @@
 import resnetextractor
+import yoloextractor
 import torchvision.models as models
+import pytorchyolo.models as yolomodels
 
 all_extractors = {
-    'resnet50': lambda : return resnetextractor.ResnetFeatureExtractor(models.resnet50(pretrained=True))
+    'yolo': lambda x: yoloextractor.YoloExtractor(x),
+    'resnet50': lambda x: resnetextractor.ResnetFeatureExtractor(x)
 }
