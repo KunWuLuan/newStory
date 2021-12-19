@@ -1,13 +1,11 @@
 import cv2 as cv
-import torchvision.transforms as transforms
 
 class VideoReader:
-    def __init__(self, path, transform) -> None:
+    def __init__(self, path) -> None:
         cap = cv.VideoCapture(path)
         if not cap.isOpened():
             print('Error: can not open the video path')
-            return
-        self.transform = transform
+            raise Exception
         self.path = path
         self.cap = cap
         self.frames_count = 0
@@ -18,8 +16,11 @@ class VideoReader:
         if not ret:
             print("Can't receive frame (stream end?). Exiting ...")
             return -1, None
+        # cv.imshow('frame',frame)
+        # if cv.waitKey(1) & 0xFF == ord('q'):
+        #     return
         # Convert OpenCV bgr to rgb
         img = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         # frame = transforms.ToPILImage()(frame)
-        return 1, self.transform(frame)
+        return 1, img
 

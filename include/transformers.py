@@ -2,12 +2,14 @@ import torchvision.transforms as transforms
 from pytorchyolo.utils.transforms import Resize, DEFAULT_TRANSFORMS
 
 img_size=416
+def get_img_size(): 
+    return img_size
 
 norm_mean = [0.485, 0.456, 0.406]
 norm_std = [0.229, 0.224, 0.225]
 
 all_cv_transforms = {
-    'yolov3':transforms.Compose([DEFAULT_TRANSFORMS,
+    'yolo':transforms.Compose([DEFAULT_TRANSFORMS,
         Resize(img_size)]),
     'resnet':transforms.Compose([
         DEFAULT_TRANSFORMS,
