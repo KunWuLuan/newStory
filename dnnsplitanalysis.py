@@ -36,7 +36,7 @@ def draw_and_save_img(img, det, img_size, output_path, classes):
     cmap = plt.get_cmap("tab20b")
     colors = [cmap(i) for i in np.linspace(0, 1, n_cls_preds)]
     bbox_colors = random.sample(colors, n_cls_preds)
-    for x1, y1, x2, y2, conf, cls_pred in detections:
+    for x1, y1, x2, y2, conf, cls_pred in det:
 
         print(f"\t+ Label: {classes[int(cls_pred)]} | Confidence: {conf.item():0.4f}")
 
@@ -77,27 +77,27 @@ if __name__ == '__main__':
     print('extractor construct completed...')
 
     if args.path == 'image':
-        transform = transforms.all_pil_transforms[args.net]
+        transform = transforms.all_pil_transforms[args.net](416)
         reader = imagesreader.ImagesReader(args.path)
     else:
-        transform = transforms.all_cv_transforms[args.net]
+        transform = transforms.all_cv_transforms[args.net](416)
         reader = videoreader.VideoReader(args.path)
 
     detector = detectors.all_detectors[args.net](extractor, transform, device)
     print('detector construct completed...')
 
     ret, next_frame = reader.next()
-    max_count = 10
+    max_count = 1
     count = 0
     last_features = None
     feature_diff = []
     print('detect start...')
     start_time = time.time_ns()
     while ret == 1 and count < max_count:
-        cur_features, detections = detector.detect(next_frame)
-        show_res = False
+        cur_features, detections = detector.detect(next_frame, next_frame.shape[:2])
+        show_res = True
         if show_res:
-            # print(detections)
+            print(detections)
             dets = torch.tensor(detections)
             from include.cococlasses import classes
             draw_and_save_img(next_frame, dets, transforms.get_img_size(), './det.jpg', classes)

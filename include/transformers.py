@@ -9,9 +9,9 @@ norm_mean = [0.485, 0.456, 0.406]
 norm_std = [0.229, 0.224, 0.225]
 
 all_cv_transforms = {
-    'yolo':transforms.Compose([DEFAULT_TRANSFORMS,
-        Resize(img_size)]),
-    'resnet':transforms.Compose([
+    'yolo':lambda x: transforms.Compose([DEFAULT_TRANSFORMS,
+        Resize(x)]),
+    'resnet':lambda x: transforms.Compose([
         DEFAULT_TRANSFORMS,
         transforms.Resize(256),
         transforms.CenterCrop(224),
@@ -21,9 +21,9 @@ all_cv_transforms = {
 }
 
 all_pil_transforms = {
-    'yolov3':transforms.Compose([
-        Resize(img_size)]),
-    'resnet':transforms.Compose([
+    'yolov3':lambda x: transforms.Compose([
+        Resize(x)]),
+    'resnet':lambda x: transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),

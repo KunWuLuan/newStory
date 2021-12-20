@@ -2,7 +2,7 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 import torchvision.models as models
-import include.resnetextractor as resnetextractor
+import include.extractors as resnetextractor
 from PIL import Image
 
 norm_mean = [0.485, 0.456, 0.406]
