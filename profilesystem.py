@@ -22,12 +22,12 @@ def single_frame_profile(reader, controllers):
 
 def batch_profile(reader, controllers, batch_size, max_batch = -1):
     print('profile start...')
-    start_time = time.time_ns()
+    start_time = time.time()
     batch_count = 0
     ret, next_frame = reader.next()
     while ret == 1 and (max_batch == -1 or batch_count < max_batch):
         count = 0
-        batch_start_time = time.time_ns()
+        batch_start_time = time.time()
         batch_feature_metrics = [None for i in range(len(controllers)-1)]
         batch_output_metrics = [{} for i in range(len(controllers)-1)]
         print('batch {} start...'.format(batch_count))
@@ -55,13 +55,13 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
                             batch_output_metrics[i-1][k] = v
             count = count+1
             ret, next_frame = reader.next()
-        print('batch {} end. cost {}s ...'.format(batch_count, (time.time_ns()-batch_start_time)/1000000000))
+        print('batch {} end. cost {}s ...'.format(batch_count, (time.time()-batch_start_time)))
         for i in range(len(batch_output_metrics)):
             for k,v in batch_output_metrics[i].items():
                 print('class {}, mean:{}'.format(k, torch.mean(batch_output_metrics[i][k], dim=0)))
             print('tensor of different layers: {}'.format(batch_feature_metrics[i].div(batch_size)))
         batch_count = batch_count + 1
-    print('end.\n cost time: {}s'.format((time.time_ns()-start_time)/1000000000))
+    print('end.\n cost time: {}s'.format((time.time()-start_time)))
 
 
 if __name__ == '__main__':
