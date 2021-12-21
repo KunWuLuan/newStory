@@ -3,15 +3,20 @@ import numpy as np
 import torch
 import include.mymodels as mymodels
 import include.extractors as extractors
+from include.util.expdatawriter import DataWriter
+import os
 import time
 from include.configctrler import build_controllers
 from include.videoreader import VideoReader
 from include.differ import output_diff, feature_diff
 
+writer = None
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--path', required=True)
     parser.add_argument('--net', default='yolo', choices=['yolo'])
+    parser.add_argument('--max_batch', default=1)
     parser.add_argument('--weightpath')
     parser.add_argument('--modelpath')
     args = parser.parse_args()
@@ -57,9 +62,22 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
             ret, next_frame = reader.next()
         print('batch {} end. cost {}s ...'.format(batch_count, (time.time()-batch_start_time)))
         for i in range(len(batch_output_metrics)):
+            print('configuration {}'.format(i))
+            avg_metrics = None
             for k,v in batch_output_metrics[i].items():
-                print('class {}, mean:{}'.format(k, torch.mean(batch_output_metrics[i][k], dim=0)))
-            print('tensor of different layers: {}'.format(batch_feature_metrics[i].div(batch_size)))
+                batch_output_metrics[i][k] = torch.mean(v, dim=0)
+                print('class {}, mean:{}'.format(k, batch_output_metrics[i][k]))
+                if avg_metrics == None:
+                    avg_metrics = batch_output_metrics[i][k].unsqueeze(0)
+                else:
+                    avg_metrics = torch.cat(avg_metrics, batch_output_metrics[i][k].unsqueeze(0))
+            avg_metrics = torch.mean(avg_metrics, dim=0)
+            print('avg metrics mean:{}'.format(avg_metrics))
+            writer.write(i+1, avg_metrics.numpy())
+
+            batch_feature_metrics[i] = batch_feature_metrics[i].div(batch_size)
+            print('tensor of different layers: {}\n'.format(batch_feature_metrics[i]))
+            writer.write(i+1, batch_feature_metrics[i].numpy())
         batch_count = batch_count + 1
     print('end.\n cost time: {}s'.format((time.time()-start_time)))
 
@@ -76,5 +94,6 @@ if __name__ == '__main__':
     print('extractor construct completed...')
 
     controllers = build_controllers(args.net, extractor, device)
+    writer = DataWriter('./data', os.path.basename(args.path).split('.')[0], len(controllers))
     reader = VideoReader(args.path)
-    batch_profile(reader=reader, controllers=controllers, batch_size=30, max_batch=2)
+    batch_profile(reader=reader, controllers=controllers, batch_size=30, max_batch=args.max_batch)
