@@ -5,7 +5,10 @@ class DataWriter:
         self.prefix = prefix
         self.max_num = max_num
         self.files = []
-        file_prefix = os.path.join(dir_path, prefix)
+        dir = os.path.join(dir_path, prefix)
+        file_prefix = os.path.join(dir, prefix)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
         for i in range(max_num):
             file_name = '{}_{}.log'.format(file_prefix, i)
             self.files.append(open(file_name, 'x'))
