@@ -16,7 +16,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--path', required=True)
     parser.add_argument('--net', default='yolo', choices=['yolo'])
-    parser.add_argument('--max_batch', default=1, type=int)
+    parser.add_argument('--max_batch', default=-1, type=int)
     parser.add_argument('--weightpath')
     parser.add_argument('--modelpath')
     args = parser.parse_args()
@@ -71,7 +71,7 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
                     if avg_metrics == None:
                         avg_metrics = batch_output_metrics[i][k].unsqueeze(0)
                     else:
-                        avg_metrics = torch.cat(avg_metrics, batch_output_metrics[i][k].unsqueeze(0))
+                        avg_metrics = torch.cat((avg_metrics, batch_output_metrics[i][k].unsqueeze(0)), dim=0)
                 avg_metrics = torch.mean(avg_metrics, dim=0)
                 print('avg metrics mean:{}'.format(avg_metrics))
                 writer.write(i+1, avg_metrics.numpy())
