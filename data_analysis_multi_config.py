@@ -30,7 +30,12 @@ if __name__ == '__main__':
     num_layers = fd[0][0].shape[1]
     num_batches = fd[0][0].shape[0]
     for i in range(num_layers):
-        plt.figure()
+        fig = plt.figure()
+        plt.subplot(2,1,1)
+        for j in range(len(fd)):
+            metrics_data = fd[j][1]
+            plt.plot(range(num_batches), metrics_data[:, 3].T, linestyle='--')
+        plt.subplot(2,1,2)
         for j in range(len(fd)):
             layer_data = fd[j][0]
             plt.plot(range(num_batches), layer_data[:, i].T)

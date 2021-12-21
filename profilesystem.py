@@ -72,7 +72,10 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
                         avg_metrics = batch_output_metrics[i][k].unsqueeze(0)
                     else:
                         avg_metrics = torch.cat((avg_metrics, batch_output_metrics[i][k].unsqueeze(0)), dim=0)
-                avg_metrics = torch.mean(avg_metrics, dim=0)
+                if avg_metrics is None:
+                    avg_metrics = torch.tensor([0,0,0,0])
+                else:
+                    avg_metrics = torch.mean(avg_metrics, dim=0)
                 print('avg metrics mean:{}'.format(avg_metrics))
                 writer.write(i+1, avg_metrics.numpy())
 
