@@ -23,6 +23,7 @@ def draw_with_data(name):
     if data is None:
         return
     layer_data, metrics_data = data[0], data[1]
+    # print(layer_data, metrics_data)
 
     metrics_data = metrics_data.T
     draw_img_with_two_dim(metrics_data)
@@ -34,11 +35,13 @@ if __name__ == '__main__':
     args = parse()
     print('path is {}'.format(args.path))
     if os.path.isdir(args.path):
+        print('path is dir')
         name = os.path.basename(args.path)
         files = os.listdir(args.path)
         for file in files:
-            analysis_single_file(os.path.join(args.path, file))
+            draw_with_data(os.path.join(args.path, file))
     elif os.path.isfile(args.path):
-        analysis_single_file(args.path)
+        print('path is file')
+        draw_with_data(args.path)
     else:
         exit(-1)
