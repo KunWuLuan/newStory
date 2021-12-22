@@ -20,6 +20,13 @@ class DotProductSimilarity(nn.Module):
             result /= math.sqrt(tensor_1.size(-1))
         return result
 
+class EuclideanSimilarity(nn.Module):
+    def __init__(self) -> None:
+        super(EuclideanSimilarity, self).__init__()
+
+    def forward(self, tensor_1, tensor_2):
+        return 1/torch.dist(tensor_1, tensor_2, p=2)
+
 class ProjectedDotProductSimilarity(nn.Module):
     def __init__(self, tensor_1_dim, tensor_2_dim, projected_dim,
                  reuse_weight=False, bias=False, activation=None):
@@ -77,7 +84,8 @@ def feature_diff(golden, o):
     similarity = torch.zeros(len(golden))
     for i in range(len(golden)):
         # similarity[i] = torch.cosine_similarity(golden[i].reshape(1,-1), o[i].reshape(1,-1))
-        similarity[i] = DotProductSimilarity()(golden[i].reshape(1,-1), o[i].reshape(1,-1))
+        similarity[i] = EuclideanSimilarity()(golden[i].reshape(1,-1), o[i].reshape(1,-1))
+        # similarity[i] = DotProductSimilarity()(golden[i].reshape(1,-1), o[i].reshape(1,-1))
         # t1 = golden[i].reshape(1,-1)
         # t2 = o[i].reshape(1,-1)
         # similarity[i] = BiLinearSimilarity(t1.shape[1], t2.shape[1])(t1, t2)
