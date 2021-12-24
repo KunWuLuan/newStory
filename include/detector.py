@@ -4,7 +4,7 @@ import numpy as np
 from . import transformers as transforms
 
 all_detectors = {
-    'yolo': lambda x,y,z: YoloDetector(x,y,z)
+    'yolo': lambda x,y,z,w: YoloDetector(x,y,z,w)
 }
 
 class Detector:

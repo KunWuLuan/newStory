@@ -18,7 +18,7 @@ transform = transforms.Compose([
 with open('imagenet_classes.txt') as f:
     classes = [line.strip() for line in f.readlines()]
 
-device = torch.device("cuda:0")
+device = torch.device("cpu")
 net = models.resnet50(pretrained=True)
 net = resnetextractor.ResnetFeatureExtractor(net)
 net.to(device)

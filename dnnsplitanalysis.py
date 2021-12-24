@@ -77,10 +77,10 @@ if __name__ == '__main__':
     print('extractor construct completed...')
 
     if args.path == 'image':
-        transform = transforms.all_pil_transforms[args.net](416)
+        transform = transforms.all_pil_transforms[args.net](608)
         reader = imagesreader.ImagesReader(args.path)
     else:
-        transform = transforms.all_cv_transforms[args.net](416)
+        transform = transforms.all_cv_transforms[args.net](224)
         reader = videoreader.VideoReader(args.path)
 
     detector = detectors.all_detectors[args.net](extractor, transform, device)

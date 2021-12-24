@@ -6,7 +6,7 @@ import include.extractors as extractors
 from include.util.expdatawriter import DataWriter
 import os
 import time
-from include.configctrler import build_controllers
+from include.configctrler import build_controllers, get_cost_of_all_constrollers
 from include.videoreader import VideoReader
 from include.differ import output_diff, feature_diff
 
@@ -33,7 +33,7 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
     while ret == 1 and (max_batch == -1 or batch_count < max_batch):
         count = 0
         batch_start_time = time.time()
-        batch_feature_metrics = [None for i in range(len(controllers)-1)]
+        # batch_feature_metrics = [None for i in range(len(controllers)-1)]
         batch_output_metrics = [{} for i in range(len(controllers)-1)]
         print('batch {} start...'.format(batch_count))
         while ret == 1 and count < batch_size:
@@ -45,11 +45,11 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
                     golden_feature = cur_feature
                     golden_output = cur_output
                 else:
-                    feature_output = feature_diff(golden_feature, cur_feature)
-                    if batch_feature_metrics[i-1] is None:
-                        batch_feature_metrics[i-1] = feature_output
-                    else:
-                        batch_feature_metrics[i-1] += feature_output
+                    # feature_output = feature_diff(golden_feature, cur_feature)
+                    # if batch_feature_metrics[i-1] is None:
+                    #     batch_feature_metrics[i-1] = feature_output
+                    # else:
+                    #     batch_feature_metrics[i-1] += feature_output
 
                     metrics_output = output_diff(golden_output, cur_output)
                     for k,v in metrics_output.items():
@@ -61,13 +61,14 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
             count = count+1
             ret, next_frame = reader.next()
         if count == batch_size:
-            print('batch {} end. cost {}s ...'.format(batch_count, (time.time()-batch_start_time)))
+            writer.write(0, 'batch {} end. cost {}s ...'.format(batch_count, (time.time()-batch_start_time)))
+            # print('batch {} end. cost {}s ...'.format(batch_count, (time.time()-batch_start_time)))
             for i in range(len(batch_output_metrics)):
-                print('configuration {}'.format(i))
+                # print('configuration {}'.format(i))
                 avg_metrics = None
                 for k,v in batch_output_metrics[i].items():
                     batch_output_metrics[i][k] = torch.mean(v, dim=0)
-                    print('class {}, mean:{}'.format(k, batch_output_metrics[i][k]))
+                    # print('class {}, mean:{}'.format(k, batch_output_metrics[i][k]))
                     if avg_metrics == None:
                         avg_metrics = batch_output_metrics[i][k].unsqueeze(0)
                     else:
@@ -76,15 +77,17 @@ def batch_profile(reader, controllers, batch_size, max_batch = -1):
                     avg_metrics = torch.tensor([0,0,0,0])
                 else:
                     avg_metrics = torch.mean(avg_metrics, dim=0)
-                print('avg metrics mean:{}'.format(avg_metrics))
+                # print('avg metrics mean:{}'.format(avg_metrics))
                 writer.write(i+1, avg_metrics.numpy())
 
-                batch_feature_metrics[i] = batch_feature_metrics[i].div(batch_size)
-                print('tensor of different layers: {}\n'.format(batch_feature_metrics[i]))
-                writer.write(i+1, batch_feature_metrics[i].numpy())
+                # batch_feature_metrics[i] = batch_feature_metrics[i].div(batch_size)
+                # print('tensor of different layers: {}\n'.format(batch_feature_metrics[i]))
+                # writer.write(i+1, batch_feature_metrics[i].numpy())
         else:
             break
         batch_count = batch_count + 1
+    writer.write(0, 'end.\n cost time: {}s'.format((time.time()-start_time)))
+    writer.write(0, 'cost of all controllers:\n{}'.format(get_cost_of_all_constrollers(controllers)))
     print('end.\n cost time: {}s'.format((time.time()-start_time)))
 
 
@@ -100,6 +103,6 @@ if __name__ == '__main__':
     print('extractor construct completed...')
 
     controllers = build_controllers(args.net, extractor, device)
-    writer = DataWriter('./data', os.path.basename(args.path).split('.')[0], len(controllers))
+    writer = DataWriter(os.path.dirname(args.path), os.path.basename(args.path).split('.')[0], len(controllers))
     reader = VideoReader(args.path)
     batch_profile(reader=reader, controllers=controllers, batch_size=30, max_batch=args.max_batch)
