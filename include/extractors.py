@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import sys
+import time
 
 class YoloExtractor(nn.Module):
     def __init__(self, submodule, extracted_layers = ["conv1", "maxpool", "layer1", "avgpool", "fc"]):
@@ -9,9 +11,10 @@ class YoloExtractor(nn.Module):
 
     def forward(self, x):
         img_size = x.size(2)
-        layer_outputs, yolo_outputs = [], []
+        feature_outputs, layer_outputs, yolo_outputs = [], [], []
         yolomodule = self.submodule
         for i, (module_def, module) in enumerate(zip(yolomodule.module_defs, yolomodule.module_list)):
+            start_time = time.clock()
             if module_def["type"] in ["convolutional", "upsample", "maxpool"]:
                 x = module(x)
             elif module_def["type"] == "route":
@@ -26,8 +29,9 @@ class YoloExtractor(nn.Module):
                 x = module[0](x, img_size)
                 yolo_outputs.append(x)
             layer_outputs.append(x)
+            feature_outputs.append(torch.tensor([(time.clock()-start_time, x.numel()*x.element_size())]))
 
-        return layer_outputs, torch.cat(yolo_outputs, 1)
+        return torch.cat(feature_outputs,0), torch.cat(yolo_outputs, 1)
         # return yolo_outputs if yolomodule.training else torch.cat(yolo_outputs, 1)
 
 class ResnetFeatureExtractor(nn.Module):

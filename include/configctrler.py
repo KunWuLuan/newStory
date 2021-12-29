@@ -2,6 +2,7 @@ from . import transformers
 from . import detector
 import cv2 as cv
 import time
+import torch
 
 # all_configs = [
 #     [1, (1280,720)], 
@@ -12,11 +13,11 @@ import time
 # ]
 
 all_configs = [
-    [1, 608], 
+    [1, 608],[1, 512],[1, 416],[1, 320],
     # [1, (854,480)], [2, (1280,720)], 
-    [2, 608],
-    [4, 608],
-    [4, 416],
+    [2, 608],[2, 512],[2, 416],[2, 320],
+    [3, 608],[3, 512],[3, 416],[3, 320],
+    [4, 608],[4, 512],[4, 416],[4, 320],
 ]
 
 def build_controllers(net, extractor, device):
@@ -26,10 +27,11 @@ def build_controllers(net, extractor, device):
     return controllers
 
 def get_cost_of_all_constrollers(controllers):
-    cost = {}
+    cost_str = ''
     for controller in controllers:
-        cost[controller.name] = controller.cost_time
-    return cost
+        cost_str = cost_str + '{}:{}\n'.format(controller.name,controller.cost_time)
+    return cost_str
+
 class Controller:
     def __init__(self, net, extractor, device, img_size, freq) -> None:
         self.img_size = img_size
@@ -51,6 +53,8 @@ class Controller:
         # resized_frame = cv.resize(frame, self.img_size)
         if self.idx == 0:
             self.last_features, self.last_outputs = self.detector.detect(frame, frame.shape[:2], False)
+        else:
+            self.last_features = torch.zeros(self.last_features.shape)
         self.idx = (self.idx + 1)%self.freq
         self.cost_time = self.cost_time + time.time()-start
         return self.last_features, self.last_outputs

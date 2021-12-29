@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument('--type', required=True, choices=['image','video'])
     parser.add_argument('--path', required=True)
     parser.add_argument('--net', default='yolo', choices=['yolo'])
+    parser.add_argument('--size', type=int, default=416)
     parser.add_argument('--weightpath')
     parser.add_argument('--modelpath')
     args = parser.parse_args()
@@ -77,10 +78,10 @@ if __name__ == '__main__':
     print('extractor construct completed...')
 
     if args.path == 'image':
-        transform = transforms.all_pil_transforms[args.net](608)
+        transform = transforms.all_pil_transforms[args.net](args.size)
         reader = imagesreader.ImagesReader(args.path)
     else:
-        transform = transforms.all_cv_transforms[args.net](224)
+        transform = transforms.all_cv_transforms[args.net](args.size)
         reader = videoreader.VideoReader(args.path)
 
     detector = detectors.all_detectors[args.net](extractor, transform, device)
